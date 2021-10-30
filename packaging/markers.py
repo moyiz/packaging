@@ -8,6 +8,7 @@ import platform
 import sys
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+import pyparsing
 from pyparsing import (  # noqa: N817
     Forward,
     Group,
@@ -16,9 +17,19 @@ from pyparsing import (  # noqa: N817
     ParseResults,
     QuotedString,
     ZeroOrMore,
-    stringEnd,
-    stringStart,
 )
+
+# To support pyparsing 2 and 3
+if pyparsing.__version__.startswith("2."):  # pragma: no cover
+    from pyparsing import (  # noqa: N813
+        stringEnd as string_end,
+        stringStart as string_start,
+    )
+else:  # pragma: no cover
+    from pyparsing import (
+        string_end,
+        string_start,
+    )
 
 from .specifiers import InvalidSpecifier, Specifier
 
@@ -135,7 +146,7 @@ MARKER_EXPR = Forward()
 MARKER_ATOM = MARKER_ITEM | Group(LPAREN + MARKER_EXPR + RPAREN)
 MARKER_EXPR << MARKER_ATOM + ZeroOrMore(BOOLOP + MARKER_EXPR)
 
-MARKER = stringStart + MARKER_EXPR + stringEnd
+MARKER = string_start + MARKER_EXPR + string_end
 
 
 def _coerce_parse_result(results: Union[ParseResults, List[Any]]) -> List[Any]:
